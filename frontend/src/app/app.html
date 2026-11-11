@@ -1,0 +1,55 @@
+<main class="page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="RAG Docs, inicio">RAG <span>/</span> DOCS</a>
+    <span class="badge"><span></span> Búsqueda vectorial persistente</span>
+  </header>
+
+  <section class="intro" aria-labelledby="page-title">
+    <p class="eyebrow">OLLAMA · .NET 10 · QDRANT</p>
+    <h1 id="page-title">Pregunta a tus <span>documentos.</span></h1>
+    <p>Sube un documento y consulta su contenido. Sus embeddings quedan guardados en Qdrant.</p>
+  </section>
+
+  <section class="workspace" aria-label="Consulta de documentos">
+    <div class="section-title"><span>01</span><div><h2>Prepara tu consulta</h2><p>Añade el texto que quieres consultar.</p></div></div>
+    <label class="field-label" for="document">Documento .txt</label>
+    <div class="upload">
+      <input id="document" type="file" accept=".txt,text/plain" [disabled]="uploading()" (change)="selectFile($event)" />
+      <span class="file-name">{{ selectedFile()?.name || 'Elige un archivo .txt (máximo 5 MB)' }}</span>
+      <span class="button-label">Seleccionar</span>
+    </div>
+    @if (uploading()) {
+      <p class="status" role="status">Procesando documento y guardando sus vectores…</p>
+    } @else if (document(); as indexed) {
+      <p class="status success" role="status">
+        Documento listo · {{ indexed.chunks }} fragmentos indexados en Qdrant
+      </p>
+    }
+
+    <hr />
+    <form (submit)="ask($event)">
+      <label class="field-label" for="question">¿Qué quieres saber?</label>
+      <div class="question-row">
+        <input id="question" type="text" maxlength="1000" autocomplete="off"
+          placeholder="Escribe una pregunta sobre el documento…" [value]="question"
+          (input)="updateQuestion($event)" />
+        <button type="submit" [disabled]="!document() || uploading() || asking()">
+          {{ asking() ? 'Buscando…' : 'Preguntar' }}
+          @if (!asking()) { <span aria-hidden="true">→</span> }
+        </button>
+      </div>
+    </form>
+
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+
+    <div class="answer">
+      <div class="answer-heading"><label class="field-label" for="answer">Respuesta</label>
+        @if (answer()) { <span class="success">Generada</span> }
+      </div>
+      <textarea id="answer" rows="6" readonly [value]="answer()"
+        [placeholder]="asking() ? 'Buscando fragmentos relevantes…' : 'Tu respuesta aparecerá aquí…'"
+        aria-live="polite"></textarea>
+    </div>
+  </section>
+  <footer><span>RAG DOCS</span><span>Recuperación inteligente de información</span></footer>
+</main>
